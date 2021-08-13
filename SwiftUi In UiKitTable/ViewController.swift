@@ -35,6 +35,7 @@ class ViewController: UIViewController {
         pageButton = UIButton()
         pageButton?.setTitle("Open Page", for: .normal)
         pageButton?.backgroundColor = .white
+        pageButton?.tintColor = .black
         pageButton?.addTarget(self, action: #selector(openPage), for: .touchUpInside)
         tableList?.delegate = self
         tableList?.dataSource = self
@@ -123,16 +124,27 @@ class ViewController: UIViewController {
     
     @objc
     func openPage() {
-        let vc = UIViewController()
+        let vc = SecondViewController()
+        vc.delegate = self
         vc.view.backgroundColor = .blue
+        guard let table = tableList else { return }
+        let isEditing = table.isEditing
+        tableList?.isEditing = !isEditing
         self.present(vc, animated: true, completion: nil)
+    }
+}
+
+extension ViewController: DismissMeDelegate {
+    func didDismiss() {
+        tableList?.reloadData()
     }
 }
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let header = HeaderView { [weak self] in
+        let subtitle = tableView.isEditing ? "editing" : "not editing"
+        let header = HeaderView(title: headerText, subtitle: subtitle) { [weak self] in
             if let self = self, let list = self.itemList {
                 self.delete(item: list.count-1)
             }
